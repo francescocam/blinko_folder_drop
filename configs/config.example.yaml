@@ -1,0 +1,28 @@
+blinko:
+  base_url: "http://localhost:1111"
+  jwt_token: "replace-with-jwt"
+
+watch:
+  input_dir: "/var/lib/blinko-folder-drop/inbox"
+  failed_dir: ""
+  recursive: false
+  stable_for: 3s
+  scan_every: 30s
+
+processing:
+  workers: 2
+  max_retries: 5
+  retry_base_delay: 2s
+  delete_on_success: true
+  archive_dir: ""
+  queue_size: 512
+
+http:
+  timeout: 120s
+
+logging:
+  level: info
+
+metrics:
+  enabled: false
+  listen_addr: 127.0.0.1:9095
