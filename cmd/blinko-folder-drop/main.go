@@ -61,12 +61,11 @@ func runCmd(args []string) {
 		log.Fatal("--config is required")
 	}
 
-	cfg, err := config.Load(*configPath)
-	if err != nil {
-		log.Fatalf("load config: %v", err)
-	}
-
 	runner := func(ctx context.Context) error {
+		cfg, err := config.Load(*configPath)
+		if err != nil {
+			return err
+		}
 		svc, err := service.New(cfg)
 		if err != nil {
 			return err

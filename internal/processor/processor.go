@@ -41,6 +41,7 @@ type FailureRecord struct {
 func New(client BlinkoClient, cfg Config) *Processor { return &Processor{client: client, cfg: cfg} }
 
 func (p *Processor) Process(ctx context.Context, filePath string) error {
+	const defaultNoteType = 1
 	ext := strings.ToLower(filepath.Ext(filePath))
 	if ext == ".md" || ext == ".markdown" {
 		content, err := os.ReadFile(filePath)
@@ -49,7 +50,7 @@ func (p *Processor) Process(ctx context.Context, filePath string) error {
 		}
 		return p.client.UpsertNote(ctx, blinko.NoteUpsertRequest{
 			Content:     string(content),
-			Type:        -1,
+			Type:        defaultNoteType,
 			Attachments: []blinko.Attachment{},
 		})
 	}
@@ -62,7 +63,7 @@ func (p *Processor) Process(ctx context.Context, filePath string) error {
 	content := fmt.Sprintf("# %s\n\nImported by folder-drop service.", name)
 	return p.client.UpsertNote(ctx, blinko.NoteUpsertRequest{
 		Content: content,
-		Type:    -1,
+		Type:    defaultNoteType,
 		Attachments: []blinko.Attachment{{
 			Name: u.Name,
 			Path: u.Path,

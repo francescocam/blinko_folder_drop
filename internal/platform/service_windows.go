@@ -24,11 +24,16 @@ func (s *svcRunner) Execute(_ []string, req <-chan svc.ChangeRequest, status cha
 	go func() {
 		_ = s.runner(ctx)
 	}()
-	status <- svc.Status{State: svc.Running, Accepts: accepted}
+	current := svc.Status{State: svc.Running, Accepts: accepted}
+	status <- current
 	for c := range req {
 		switch c.Cmd {
+		case svc.Interrogate:
+			// SCM periodically checks service state via interrogate.
+			status <- current
 		case svc.Stop, svc.Shutdown:
-			status <- svc.Status{State: svc.StopPending}
+			current = svc.Status{State: svc.StopPending}
+			status <- current
 			cancel()
 			return false, 0
 		default:

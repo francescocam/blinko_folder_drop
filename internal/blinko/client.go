@@ -124,5 +124,39 @@ func (c *Client) UpsertNote(ctx context.Context, reqBody NoteUpsertRequest) erro
 	if resp.StatusCode >= 300 {
 		return &HTTPError{StatusCode: resp.StatusCode, Body: string(body)}
 	}
+
+	trimmed := bytes.TrimSpace(body)
+	if len(trimmed) == 0 {
+		return nil
+	}
+
+	if looksLikeHTML(resp.Header.Get("Content-Type"), trimmed) {
+		return fmt.Errorf("unexpected html response from note upsert; check blinko.base_url and endpoint")
+	}
+
+	if !json.Valid(trimmed) {
+		return fmt.Errorf("unexpected non-json response from note upsert")
+	}
+
+	var payload map[string]any
+	if err := json.Unmarshal(trimmed, &payload); err != nil {
+		return fmt.Errorf("parse note upsert response: %w", err)
+	}
+
+	if ok, has := payload["success"].(bool); has && !ok {
+		return fmt.Errorf("note upsert returned success=false: %s", string(trimmed))
+	}
+	if ok, has := payload["ok"].(bool); has && !ok {
+		return fmt.Errorf("note upsert returned ok=false: %s", string(trimmed))
+	}
 	return nil
+}
+
+func looksLikeHTML(contentType string, body []byte) bool {
+	ct := strings.ToLower(contentType)
+	if strings.Contains(ct, "text/html") {
+		return true
+	}
+	lower := bytes.ToLower(body)
+	return bytes.HasPrefix(lower, []byte("<!doctype html")) || bytes.HasPrefix(lower, []byte("<html"))
 }

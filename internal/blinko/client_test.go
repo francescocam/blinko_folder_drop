@@ -41,3 +41,39 @@ func TestUploadAndUpsert(t *testing.T) {
 		t.Fatalf("unexpected auth headers: %+v", authHeaders)
 	}
 }
+
+func TestUpsertRejectsHTMLSuccessResponse(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/v1/note/upsert" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("<!doctype html><html><body>not found</body></html>"))
+	}))
+	defer s.Close()
+
+	client := New(s.URL, "abc", s.Client())
+	if err := client.UpsertNote(context.Background(), NoteUpsertRequest{Content: "c", Type: -1}); err == nil {
+		t.Fatal("expected error for html response")
+	}
+}
+
+func TestUpsertRejectsAPILevelFailure(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/v1/note/upsert" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"success":false,"message":"failed"}`))
+	}))
+	defer s.Close()
+
+	client := New(s.URL, "abc", s.Client())
+	if err := client.UpsertNote(context.Background(), NoteUpsertRequest{Content: "c", Type: -1}); err == nil {
+		t.Fatal("expected error for success=false response")
+	}
+}

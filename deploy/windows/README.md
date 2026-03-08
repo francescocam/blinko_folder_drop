@@ -11,7 +11,7 @@ go build -o blinko-folder-drop.exe ./cmd/blinko-folder-drop
 
 3. Create service:
 ```powershell
-sc.exe create blinko-folder-drop binPath= "\"C:\Program Files\BlinkoFolderDrop\blinko-folder-drop.exe\" run --config \"C:\ProgramData\BlinkoFolderDrop\config.yaml\"" start= auto
+sc.exe create blinko-folder-drop binPath= '"C:\Program Files\BlinkoFolderDrop\blinko-folder-drop.exe" run --config "C:\ProgramData\BlinkoFolderDrop\config.yaml"' start= auto
 ```
 
 4. Configure recovery:

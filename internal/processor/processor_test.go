@@ -67,7 +67,7 @@ func TestProcessMarkdownCreatesTextOnlyNote(t *testing.T) {
 	if fc.upsertCalls != 1 {
 		t.Fatalf("expected 1 upsert, got %d", fc.upsertCalls)
 	}
-	if fc.lastUpsert.Content != "# title" || len(fc.lastUpsert.Attachments) != 0 || fc.lastUpsert.Type != -1 {
+	if fc.lastUpsert.Content != "# title" || len(fc.lastUpsert.Attachments) != 0 || fc.lastUpsert.Type != 1 {
 		t.Fatalf("unexpected upsert payload: %+v", fc.lastUpsert)
 	}
 }
@@ -91,6 +91,9 @@ func TestProcessBinaryUploadsAndBuildsAttachmentNote(t *testing.T) {
 	}
 	if len(fc.lastUpsert.Attachments) != 1 {
 		t.Fatalf("expected 1 attachment, got %d", len(fc.lastUpsert.Attachments))
+	}
+	if fc.lastUpsert.Type != 1 {
+		t.Fatalf("unexpected note type: %+v", fc.lastUpsert)
 	}
 	if fc.lastUpsert.Attachments[0].Path != "/api/file/abc" {
 		t.Fatalf("unexpected attachment path: %+v", fc.lastUpsert.Attachments[0])
